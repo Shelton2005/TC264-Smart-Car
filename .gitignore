@@ -1,0 +1,23 @@
+# Generated build output
+/Debug/
+/Release/
+*.o
+*.obj
+*.elf
+*.hex
+*.map
+*.d
+*.dep
+
+# Local IDE / assistant state
+/.reasonix/
+/.metadata/
+/reasonix.toml
+
+# OS files
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# Keep .project, .cproject, .settings and source libraries for reproduction.
+# Keep 成果演示 videos as project deliverables.
