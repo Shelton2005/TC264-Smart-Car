@@ -137,7 +137,7 @@ int16_t Remap_Angle_Linear(int16_t channel);
 float KnobStepAngle(int16_t ch);
 void GUN_ctrl_text(void);
 
-//void Wx_paramt_init(void);
-//void paramt_give(void);
+//void wireless_parameter_init(void);
+//void parameter_send(void);
 //void new_ctrl(void);
 #endif /* CODE_PERIPHERALS_H_ */

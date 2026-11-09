@@ -15,11 +15,11 @@ int  last_index = 127; //last初始为无效值
 
 void (*current_operation_index)(void);       //显示函数索引指针(当前操作索引)
 
-key_table table_dispaly[100]=                 //结构体数组
+key_table table_display[100]=                 //结构体数组
 {
 //{索引，向上，向下，确认，显示函数}
     //第0层
-    {0,0,0,1,(*fun_0)},                     //AIIT_meun
+    {0,0,0,1,(*fun_0)},                     //AIIT_menu
 
     //第1层
     {1,6,2, 7,(*fun_a1)},
@@ -106,20 +106,20 @@ void Menu(void)//菜单函数
                 if(key1_flag)
                 {
 
-                    func_index = table_dispaly[func_index].up;    //向上翻
+                    func_index = table_display[func_index].up;    //向上翻
                     key1_clear();
                 }
                 if(key2_flag)
                 {
 
-                    func_index = table_dispaly[func_index].down;    //向下翻
+                    func_index = table_display[func_index].down;    //向下翻
                      key2_clear();
 
                 }
                 if(key3_flag)
                 {
 
-                    func_index = table_dispaly[func_index].enter;    //确认
+                    func_index = table_display[func_index].enter;    //确认
                     key3_clear();
 
                 }
@@ -127,7 +127,7 @@ void Menu(void)//菜单函数
 
             if (func_index != last_index)
             {
-                current_operation_index = table_dispaly[func_index].current_operation;
+                current_operation_index = table_display[func_index].current_operation;
 
                 ips200_clear();
                 (*current_operation_index)();//执行当前操作函数
@@ -602,18 +602,18 @@ void fun_b31()
 
 void fun_b32()//SUB2 — 开始惯导录制
 {
-    if(gd_mode == guandao_pass_mode)
+    if(gd_mode == trajectory_pass_mode)
     {
         dis_record = 0.03;
-        guandao_Init();
-        gd_mode = guandao_record_mode;
-        Mode_chage = 1;
+        trajectory_init();
+        gd_mode = trajectory_record_mode;
+        Mode_change = 1;
         ips200_clear();
     }
 
     ips200_show_string(0,  16*0, ">>> REC SUB2 <<<");
     ips200_show_string(0,  16*1, "Points: ");
-    ips200_show_int(8*10, 16*1, guandao_index, 5);
+    ips200_show_int(8*10, 16*1, trajectory_index, 5);
     ips200_show_string(0,  16*3, "Push the car");
     ips200_show_string(0,  16*4, "to draw figure-8");
     ips200_show_string(0,  16*6, "ENTER=back to menu");
@@ -621,18 +621,18 @@ void fun_b32()//SUB2 — 开始惯导录制
 
 void fun_b33()//SUB3 — 开始惯导录制
 {
-    if(gd_mode == guandao_pass_mode)
+    if(gd_mode == trajectory_pass_mode)
     {
         dis_record = 0.2;
-        guandao_Init();
-        gd_mode = guandao_record_mode;
-        Mode_chage = 1;
+        trajectory_init();
+        gd_mode = trajectory_record_mode;
+        Mode_change = 1;
         ips200_clear();
     }
 
     ips200_show_string(0,  16*0, ">>> REC SUB3 <<<");
     ips200_show_string(0,  16*1, "Points: ");
-    ips200_show_int(8*10, 16*1, guandao_index, 5);
+    ips200_show_int(8*10, 16*1, trajectory_index, 5);
     ips200_show_string(0,  16*3, "Push the car");
     ips200_show_string(0,  16*4, "to draw figure-U");
     ips200_show_string(0,  16*6, "ENTER=back to menu");
@@ -647,18 +647,18 @@ void fun_b34()
 
 void fun_b35()//保存录制
 {
-    if(gd_mode == guandao_record_mode)
+    if(gd_mode == trajectory_record_mode)
     {
-        guandao_flash_record();             // 保存到 Flash
-        gd_mode = guandao_pass_mode;        // 回到空闲
-        Mode_chage = 0;                     // 退出 Body_keep
+        trajectory_flash_save();             // 保存到 Flash
+        gd_mode = trajectory_pass_mode;        // 回到空闲
+        Mode_change = 0;                     // 退出 Body_keep
         ips200_clear();
         Buzzer_check(50);                  // 滴一声提示
     }
 
     ips200_show_string(0,  16*0, ">>> SAVED <<<");
     ips200_show_string(0,  16*1, "Total points: ");
-    ips200_show_int(8*16, 16*1, guandao_index, 5);
+    ips200_show_int(8*16, 16*1, trajectory_index, 5);
     ips200_show_string(0,  16*3, "ENTER=back to menu");
 }
 
@@ -670,10 +670,10 @@ void fun_c31()
 void fun_c32()//GO_2 — 开始科目2（惯导回放）
 {
     /* 如果还在录制状态，先自动保存再回放 */
-    if(gd_mode == guandao_record_mode)
+    if(gd_mode == trajectory_record_mode)
     {
-        guandao_flash_record();
-        gd_mode = guandao_pass_mode;
+        trajectory_flash_save();
+        gd_mode = trajectory_pass_mode;
         Buzzer_check(100);
         ips200_clear();
     }
@@ -682,16 +682,16 @@ void fun_c32()//GO_2 — 开始科目2（惯导回放）
 //    Motor_Standard_Speed = 383;               // 科目2
       Motor_Standard_Speed = 33;               // 科目2
     dis_record = 0.03;                       // 科目2：3cm
-    if(gd_mode == guandao_pass_mode)
+    if(gd_mode == trajectory_pass_mode)
     {
-        guandao_flash_load();
-        if(guandao_index > 0)
+        trajectory_flash_load();
+        if(trajectory_index > 0)
         {
             data_x.f = 0; data_y.f = 0;
-            guandao_lucheng = 0;
+            trajectory_distance = 0;
             c_error = 0; int_c_error = 0;
-            guandao_last_cnt = 0; guandao_new_cnt = 0;
-            gd_mode = guandao_load_mode;
+            trajectory_last_cnt = 0; trajectory_new_cnt = 0;
+            gd_mode = trajectory_load_mode;
             SUB_flag = 2;
             step = 15; stl_kp = 12;
             ips200_clear();
@@ -702,32 +702,32 @@ void fun_c32()//GO_2 — 开始科目2（惯导回放）
     ips200_show_string(0,  16*1, "Status: ");
     ips200_show_int(8*10, 16*1, gd_mode, 2);
     ips200_show_string(0,  16*2, "Points: ");
-    ips200_show_int(8*10, 16*2, guandao_index, 5);
+    ips200_show_int(8*10, 16*2, trajectory_index, 5);
     ips200_show_string(0,  16*4, "ENTER=back to menu");
 }
 
 void fun_c33()//GO_3 — 开始科目3（惯导+弯道减速）
 {
-    if(gd_mode == guandao_record_mode)
+    if(gd_mode == trajectory_record_mode)
     {
-        guandao_flash_record();
-        gd_mode = guandao_pass_mode;
+        trajectory_flash_save();
+        gd_mode = trajectory_pass_mode;
         Buzzer_check(100);
         ips200_clear();
     }
 
     Motor_Standard_Speed = 62;               // 科目3
     dis_record = 0.2;                      // 科目3：20cm
-    if(gd_mode == guandao_pass_mode)
+    if(gd_mode == trajectory_pass_mode)
     {
-        guandao_flash_load();
-        if(guandao_index > 0)
+        trajectory_flash_load();
+        if(trajectory_index > 0)
         {
             data_x.f = 0; data_y.f = 0;
-            guandao_lucheng = 0;
+            trajectory_distance = 0;
             c_error = 0; int_c_error = 0;
-            guandao_last_cnt = 0; guandao_new_cnt = 0;
-            gd_mode = guandao_load_mode;
+            trajectory_last_cnt = 0; trajectory_new_cnt = 0;
+            gd_mode = trajectory_load_mode;
             SUB_flag = 3;
             step = 7; stl_kp = 15;
             ips200_clear();
@@ -738,7 +738,7 @@ void fun_c33()//GO_3 — 开始科目3（惯导+弯道减速）
     ips200_show_string(0,  16*1, "Status: ");
     ips200_show_int(8*10, 16*1, gd_mode, 2);
     ips200_show_string(0,  16*2, "Points: ");
-    ips200_show_int(8*10, 16*2, guandao_index, 5);
+    ips200_show_int(8*10, 16*2, trajectory_index, 5);
     ips200_show_string(0,  16*4, "ENTER=back to menu");
 }
 

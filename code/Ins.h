@@ -18,25 +18,25 @@
 
 typedef enum
 {
-    guandao_pass_mode = 0,     // 空闲
-    guandao_record_mode,       // 录制航向
-    guandao_load_mode          // 回放循迹
-} guandao_mode;
+    trajectory_pass_mode = 0,     // 空闲
+    trajectory_record_mode,       // 录制航向
+    trajectory_load_mode          // 回放循迹
+} trajectory_mode;
 
 union FloatInspector {
     float    f;   // 4 字节
     uint32   i;   // 4 字节
 };
 
-extern guandao_mode gd_mode;
+extern trajectory_mode gd_mode;
 extern union FloatInspector data_x,data_y,data_yaw;
 
 extern float dis_record;
-extern int guandao_index;         //记录点的目录
-extern int guandao_cnt;           //当前循迹点
-extern int guandao_last_cnt;
-extern int guandao_new_cnt;
-extern float guandao_lucheng;
+extern int trajectory_index;         //记录点的目录
+extern int trajectory_cnt;           //当前循迹点
+extern int trajectory_last_cnt;
+extern int trajectory_new_cnt;
+extern float trajectory_distance;
 extern float X_Record_f[MAX];
 extern float Y_Record_f[MAX];
 extern float Yaw_Record_f[MAX];
@@ -53,12 +53,12 @@ extern float stl_kp;    //8.5
 extern float stl_ki;
 extern float step;
 
-void guandao_record(void);
-void guandao_flash_record(void);
-void guandao_flash_load(void);
-void guandao_load(void);
-void guandao_Init(void);
-void guandao_task(void);
+void trajectory_record(void);
+void trajectory_flash_save(void);
+void trajectory_flash_load(void);
+void trajectory_replay(void);
+void trajectory_init(void);
+void trajectory_task(void);
 
 void Ins_text(void);
 void INS_log(void);

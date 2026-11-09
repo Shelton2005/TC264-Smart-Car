@@ -20,7 +20,7 @@ int core0_main(void)
     Imu_init();                                         //IMU初始化
 ////    uart_receiver_init();                               //sbus接收机初始化
     balance_cascade_init();                             //平衡及陀螺仪参数初始化
-    guandao_Init();                                     //惯导初始化
+    trajectory_init();                                     //惯导初始化
     Buzzer_check(50);                                       //外设初始化成功
 
 
@@ -45,7 +45,7 @@ int core0_main(void)
 //        Ins_text();
 
         /* 惯导回放时显示完整跟踪数据，否则显示普通 INS 日志 */
-//        if(Mode_chage == 2)
+//        if(Mode_change == 2)
 //        {
 //            Balance_2_text();       // LCD 显示惯导跟踪调试数据
 //            Balance_2_printf();     // 串口输出惯导跟踪数据
@@ -61,7 +61,7 @@ int core0_main(void)
 
 
 //        printf("%d,%f\r\n",-motor_value.receive_left_speed_data,roll_balance_cascade.speed_cycle.out);
-//         printf("%d,%f\r\n",-motor_value.receive_left_speed_data,guandao_lucheng);
+//         printf("%d,%f\r\n",-motor_value.receive_left_speed_data,trajectory_distance);
 
 //        CYT2_S_motor_ctrl(1);
         // 此处编写需要循环执行的代码
@@ -89,7 +89,7 @@ IFX_INTERRUPT(cc60_pit_ch0_isr, 0, CCU6_0_CH0_ISR_PRIORITY)
 
     INS_data_get();                                  //惯导数据采集
 
-    guandao_task();                                  //惯导读取与复现
+    trajectory_task();                                  //惯导读取与复现
 
 
 
@@ -101,7 +101,7 @@ IFX_INTERRUPT(cc60_pit_ch0_isr, 0, CCU6_0_CH0_ISR_PRIORITY)
     }
 
 
-    if(Mode_chage==1)//车头随动模式用以惯导推车
+    if(Mode_change==1)//车头随动模式用以惯导推车
     {
         Body_keep();
     }

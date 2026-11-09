@@ -129,38 +129,38 @@ void CYT2_S_motor_loop_ctrl(float T_SPEED)
 void Motor_text(void)//电机测试
 {
 
-       static int32 S_PSEED=0;
+       static int32 S_SPEED=0;
 
        Key_scan();
 
           if(key1_flag)
              {
                  key1_flag=0;
-                 S_PSEED+=100;
+                 S_SPEED+=100;
              }
           if(key2_flag)
              {
                  key2_flag=0;
-                 S_PSEED-=100;
+                 S_SPEED-=100;
              }
           if(key3_flag)
              {
                  key3_flag=0;
-                 S_PSEED+=500;
+                 S_SPEED+=500;
              }
           if(key4_flag)
              {
                  key4_flag=0;
-                 S_PSEED-=500;
+                 S_SPEED-=500;
              }
 
 
           ips_show_string(8*0,16*1, "Motor_text");
 
-          ips_show_string(8*0,16*3, "V:");          ips_show_int(8*5,  16*3,S_PSEED, 5);
+          ips_show_string(8*0,16*3, "V:");          ips_show_int(8*5,  16*3,S_SPEED, 5);
 
 
-          CYT2_S_motor_ctrl(S_PSEED);
+          CYT2_S_motor_ctrl(S_SPEED);
 }
 
 
@@ -205,41 +205,41 @@ float CYT2_get_distance_mag(int16 speed)
 void Encoder_text(void)//电机测试
 {
 
-       static int32 S_PSEED=0;
+       static int32 S_SPEED=0;
 
        Key_scan();
 
           if(key1_flag)//左电机+500
              {
                  key1_flag=0;
-                 S_PSEED+=50;
+                 S_SPEED+=50;
              }
           if(key2_flag)//左电机-500
              {
                  key2_flag=0;
-                 S_PSEED-=50;
+                 S_SPEED-=50;
              }
           if(key3_flag)//右电机+500
              {
                  key3_flag=0;
-                 S_PSEED+=500;
+                 S_SPEED+=500;
              }
           if(key4_flag)//右电机-500
              {
                  key4_flag=0;
-                 S_PSEED-=500;
+                 S_SPEED-=500;
              }
 
 
           ips_show_string(8*0,16*1, "Encoder_text");
 
-          ips_show_string(8*0,16*3, "V:");          ips_show_int(8*7,  16*3,S_PSEED, 5);
+          ips_show_string(8*0,16*3, "V:");          ips_show_int(8*7,  16*3,S_SPEED, 5);
           ips_show_string(8*0,16*4, "E_V:");        ips_show_int(8*7,  16*4,A_SPEED,5);
           ips_show_string(8*0,16*5, "B_V:");        ips_show_int(8*7,  16*5,-motor_value.receive_left_speed_data,5);
-          ips_show_string(8*0,16*6, "D:");          ips200_show_float(8*7,  16*6,guandao_lucheng,5,5);
+          ips_show_string(8*0,16*6, "D:");          ips200_show_float(8*7,  16*6,trajectory_distance,5,5);
 
 
-          CYT2_S_motor_ctrl(S_PSEED);
+          CYT2_S_motor_ctrl(S_SPEED);
 }
 
 
@@ -391,22 +391,22 @@ void New_ctrl(void)
                    //舵机控制
 //                          if(uart_receiver.channel[0]>=1500&&uart_receiver.channel[0]<=1792)
 //                          {
-//                              Taget_angle=180;
-////                              Taget_angle-=3;
+//                              Target_angle=180;
+////                              Target_angle-=3;
 //                          }
 //
 //                           else if(uart_receiver.channel[0]>=192&&uart_receiver.channel[0]<=700)
 //                           {
-//                               Taget_angle-=45;
-////                               Taget_angle+=3;
+//                               Target_angle-=45;
+////                               Target_angle+=3;
 //                           }
 //                           else
 //                           {
-//                               Taget_angle=0;
+//                               Target_angle=0;
 //                           }
 
-//                   Taget_angle=KnobStepAngle(uart_receiver.channel[0]);
-//                   printf("%f\r\n",Taget_angle);
+//                   Target_angle=KnobStepAngle(uart_receiver.channel[0]);
+//                   printf("%f\r\n",Target_angle);
 
                           //电机控制
                           if(uart_receiver.channel[2]>=1500)
@@ -453,7 +453,7 @@ void GUN_ctrl_text(void)
 
 ////--------------------------------------------------------------------------无线串口
 //
-//void Wx_paramt_init(void)
+//void wireless_parameter_init(void)
 //{
 //    wireless_uart_init();
 //    seekfree_assistant_interface_init(SEEKFREE_ASSISTANT_WIRELESS_UART);
@@ -463,7 +463,7 @@ void GUN_ctrl_text(void)
 //float G_KD=0;
 //float A_KP=0;
 //float N_SPEED=0;
-//void paramt_give(void)
+//void parameter_send(void)
 //{
 //    seekfree_assistant_data_analysis();
 //

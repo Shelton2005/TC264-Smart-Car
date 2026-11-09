@@ -18,20 +18,20 @@ float step = 8.0;//2
 #define GD_PI       3.1415926f
 #define GD_DEG2RAD  (GD_PI / 180.0f)
 
-guandao_mode gd_mode = guandao_pass_mode;
+trajectory_mode gd_mode = trajectory_pass_mode;
 
 union FloatInspector data_x,data_y,data_yaw;  //记录当前点
 
 float dis_record = 0.03;//科目1和科目3需要改成0.2-20CM
 
-int guandao_index = 0;         //记录点的目录
-int guandao_cnt = 0;           //当前循迹点
-int guandao_last_cnt = 0;
-int guandao_new_cnt = 0;
+int trajectory_index = 0;         //记录点的目录
+int trajectory_cnt = 0;           //当前循迹点
+int trajectory_last_cnt = 0;
+int trajectory_new_cnt = 0;
 int forward = 3;               //前瞻长度（原2→3，提前转向，弯道更准）
 int window = 10;               //搜点窗口
 
-float guandao_lucheng = 0;       //记录走了多少距离
+float trajectory_distance = 0;       //记录走了多少距离
 float X_Record_f[MAX] = {0};      //读取得到的x的数组
 float Y_Record_f[MAX] = {0};      //读取得到的y的数组
 float Yaw_Record_f[MAX] = {0};    //读取得到的yaw数组
@@ -53,7 +53,7 @@ float stl_ki = 0;    //原本2000
  */
 
 //工具函数
-float gougu(float x1,float y1,float x2,float y2)
+float distance_between_points(float x1,float y1,float x2,float y2)
 {
     float dx = x1 - x2;
     float dy = y1 - y2;
@@ -64,7 +64,7 @@ float gougu(float x1,float y1,float x2,float y2)
  * x,y是当前坐标
  * X_Record_f,Y_Record_f是路径坐标数组
  * len是数组长度
- * per_cnt是上一次匹配的索引
+ * pre_cnt是上一次匹配的索引
  */
 float cross_error(float x , float y , float *X_Record_f , float *Y_Record_f , int len , int pre_cnt , int *new_cnt)    //横向误差计算
 {
@@ -103,27 +103,27 @@ float cross_error(float x , float y , float *X_Record_f , float *Y_Record_f , in
 //实现函数
 
 //记录坐标
-void guandao_record(void)
+void trajectory_record(void)
 {
-    if(guandao_lucheng <= dis_record)
+    if(trajectory_distance <= dis_record)
     {
         return;
     }
 
-    guandao_lucheng -= dis_record;
+    trajectory_distance -= dis_record;
 
-    if(gd_mode == guandao_record_mode)
+    if(gd_mode == trajectory_record_mode)
     {
-        X_Record_i[guandao_index] = data_x.i;
-        Y_Record_i[guandao_index] = data_y.i;
-        Yaw_Record_i[guandao_index] = data_yaw.i;
+        X_Record_i[trajectory_index] = data_x.i;
+        Y_Record_i[trajectory_index] = data_y.i;
+        Yaw_Record_i[trajectory_index] = data_yaw.i;
 
-        guandao_index ++;
+        trajectory_index ++;
     }
 }
 
 //上传坐标
-void guandao_flash_record(void)
+void trajectory_flash_save(void)
 {
     uint16 lenh,lenx,leny,lenyaw;
     uint32 *ph,*px,*py,*pyaw;
@@ -132,7 +132,7 @@ void guandao_flash_record(void)
     lenx = MAX;
     leny = MAX;
     lenyaw = MAX;
-    ph = (uint32)&guandao_index;
+    ph = (uint32)&trajectory_index;
     px = X_Record_i;
     py = Y_Record_i;
     pyaw = Yaw_Record_i;
@@ -149,7 +149,7 @@ void guandao_flash_record(void)
 }
 
 //读取坐标,并转化为float供循迹
-void guandao_flash_load(void)
+void trajectory_flash_load(void)
 {
     uint16 lenh,lenx,leny,lenyaw;
     uint32 *ph,*px,*py,*pyaw;
@@ -159,7 +159,7 @@ void guandao_flash_load(void)
     lenx = MAX;
     leny = MAX;
     lenyaw = MAX;
-    ph = (uint32)&guandao_index;
+    ph = (uint32)&trajectory_index;
     px = X_Record_i;
     py = Y_Record_i;
     pyaw = Yaw_Record_i;
@@ -169,7 +169,7 @@ void guandao_flash_load(void)
     flash_read_page(0, FLASH_Y_PAGE, py, leny);
     flash_read_page(0, FLASH_YAW_PAGE, pyaw, lenyaw);
 
-    for(i = 0; i < guandao_index; i++)
+    for(i = 0; i < trajectory_index; i++)
     {
         data_x.i = X_Record_i[i];
         X_Record_f[i] = data_x.f;
@@ -191,25 +191,25 @@ void guandao_flash_load(void)
 
 
 float T_A=0;
-void guandao_load(void)
+void trajectory_replay(void)
 {
-    if(guandao_lucheng <= dis_record)
+    if(trajectory_distance <= dis_record)
     {
         return;
     }
 
-    guandao_lucheng -= dis_record;
+    trajectory_distance -= dis_record;
 
-    c_error = cross_error(data_x.f , data_y.f , X_Record_f , Y_Record_f , guandao_index , guandao_last_cnt , &guandao_new_cnt);//算出横向误差同时更新当前跑的点
+    c_error = cross_error(data_x.f , data_y.f , X_Record_f , Y_Record_f , trajectory_index , trajectory_last_cnt , &trajectory_new_cnt);//算出横向误差同时更新当前跑的点
 
     int_c_error += stl_ki * c_error * 0.001;//0.001和中断没关系是个常量
 
     if(int_c_error >= int_c_max){int_c_error = int_c_max;}
     if(int_c_error <= int_c_min){int_c_error = int_c_min;}
 
-    /* 取前瞻点的 yaw 作为 Stanley 航向参考（用 guandao_new_cnt = best_cnt + 2） */
-    int yaw_ref_idx = guandao_new_cnt;
-    if(yaw_ref_idx >= guandao_index) { yaw_ref_idx = guandao_index - 1; }
+    /* 取前瞻点的 yaw 作为 Stanley 航向参考（用 trajectory_new_cnt = best_cnt + 2） */
+    int yaw_ref_idx = trajectory_new_cnt;
+    if(yaw_ref_idx >= trajectory_index) { yaw_ref_idx = trajectory_index - 1; }
 
     float temp = Yaw_Record_f[yaw_ref_idx] - atanf(stl_kp * c_error / Motor_Standard_Speed)*180.0f / 3.1415926f - int_c_error;//temp-目标角度
 //        float temp = Yaw_Record_f[yaw_ref_idx] - atanf(stl_kp * c_error / 33)*180.0f / 3.1415926f - int_c_error;//temp-目标角度
@@ -219,33 +219,33 @@ void guandao_load(void)
 
 //    printf("temp=%f\r\n",temp);
 
-    float diff = AngleErrorNormalize(temp - Taget_angle);
+    float diff = AngleErrorNormalize(temp - Target_angle);
 
 
     if(fabsf(diff) <= step)
        {
-        Taget_angle = temp;
+        Target_angle = temp;
        }
        else if(diff > 0.0f)
        {
-           Taget_angle = AngleErrorNormalize(Taget_angle+ step);
+           Target_angle = AngleErrorNormalize(Target_angle+ step);
        }
        else
        {
-           Taget_angle = AngleErrorNormalize(Taget_angle - step);
+           Target_angle = AngleErrorNormalize(Target_angle - step);
        }
 //    printf("T_A=%f\r\n",T_A);
-    guandao_last_cnt = guandao_new_cnt;
+    trajectory_last_cnt = trajectory_new_cnt;
 }
 
-//if(guandao_new_cnt>=-INDEX)
+//if(trajectory_new_cnt>=-INDEX)
 //{
 //  点读完了
 //}
 
 //初始化函数
 //全部初始化
-void guandao_Init(void)
+void trajectory_init(void)
 {
     memset(&X_Record_f, 0, sizeof(X_Record_f));
     memset(&Y_Record_f, 0, sizeof(Y_Record_f));
@@ -256,27 +256,27 @@ void guandao_Init(void)
     memset(&Y_Record_i, 0, sizeof(Y_Record_i));
     memset(&Yaw_Record_i, 0, sizeof(Yaw_Record_i));
 
-    guandao_lucheng = 0;
-    guandao_index = 0;
-    guandao_cnt = 0;
-    guandao_last_cnt = 0;
-    guandao_new_cnt = 0;
+    trajectory_distance = 0;
+    trajectory_index = 0;
+    trajectory_cnt = 0;
+    trajectory_last_cnt = 0;
+    trajectory_new_cnt = 0;
 
     data_x.f = 0;
     data_y.f = 0;
 
-    gd_mode = guandao_pass_mode;    //默认为空闲状态
+    gd_mode = trajectory_pass_mode;    //默认为空闲状态
 }
 
-void guandao_task(void)
+void trajectory_task(void)
 {
-    if(gd_mode == guandao_record_mode)
+    if(gd_mode == trajectory_record_mode)
     {
-        guandao_record();
+        trajectory_record();
     }
-    else if(gd_mode == guandao_load_mode)
+    else if(gd_mode == trajectory_load_mode)
     {
-        guandao_load();
+        trajectory_replay();
     }
 }
 
@@ -290,12 +290,12 @@ void Ins_text(void)
             gpio_set_level(LED1,0);
 
             /* 当前空闲 -> 开始录制 */
-            if(gd_mode == guandao_pass_mode)
+            if(gd_mode == trajectory_pass_mode)
             {
                 /* 开始录制航向序列 */
-                gd_mode = guandao_record_mode;
+                gd_mode = trajectory_record_mode;
 
-                Mode_chage=1;//开启车头随动
+                Mode_change=1;//开启车头随动
             }
 
         }
@@ -306,12 +306,12 @@ void Ins_text(void)
             Buzzer_check(100);
             gpio_set_level(LED2,0);
 
-            if(gd_mode == guandao_record_mode)
+            if(gd_mode == trajectory_record_mode)
             {
                 /* 保存录制结果到 Flash */
-                   guandao_flash_record();
+                   trajectory_flash_save();
 
-                   gd_mode = guandao_pass_mode;
+                   gd_mode = trajectory_pass_mode;
             }
 
         }
@@ -323,24 +323,24 @@ void Ins_text(void)
             gpio_set_level(LED3,0);
 
 
-            if(gd_mode == guandao_pass_mode)
+            if(gd_mode == trajectory_pass_mode)
             {
                 /* 从 Flash 中读取录好的航向序列，并开始回放 */
-                guandao_flash_load();
+                trajectory_flash_load();
 
                 /* 重置惯导位置和积分项，消除录制→回放之间的累积漂移 */
                 data_x.f = 0;
                 data_y.f = 0;
-                guandao_lucheng = 0;
+                trajectory_distance = 0;
                 c_error = 0;
                 int_c_error = 0;
-                guandao_last_cnt = 0;
-                guandao_new_cnt = 0;
+                trajectory_last_cnt = 0;
+                trajectory_new_cnt = 0;
 
-                gd_mode = guandao_load_mode;
+                gd_mode = trajectory_load_mode;
 
 
-                Mode_chage=2;
+                Mode_change=2;
 
 
 
@@ -359,13 +359,13 @@ void Ins_text(void)
 
 void INS_log(void)
 {
-    ips_show_string(8*0, 16*0, "Distance:");        ips_show_float(8*10,16*0, guandao_lucheng,3,6);
+    ips_show_string(8*0, 16*0, "Distance:");        ips_show_float(8*10,16*0, trajectory_distance,3,6);
     ips_show_string(8*0, 16*1, "YAW:");             ips_show_float(8*10,16*1, theta0,3,6);
     ips_show_string(8*0, 16*2, "X:");               ips_show_float(8*10,16*2, data_x.f ,3,6);
     ips_show_string(8*0, 16*3, "Y");                ips_show_float(8*10,16*3, data_y.f ,3,6);
     ips_show_string(8*0, 16*4, "D_YAW");            ips_show_float(8*10,16*4, data_yaw.f,3,6);
-    ips_show_string(8*0, 16*5, "INDEX");            ips_show_uint(8*10,16*5, guandao_index,5);
-    ips_show_string(8*0, 16*6, "T_A");              ips_show_float(8*10,16*6, Taget_angle,3,6);
+    ips_show_string(8*0, 16*5, "INDEX");            ips_show_uint(8*10,16*5, trajectory_index,5);
+    ips_show_string(8*0, 16*6, "T_A");              ips_show_float(8*10,16*6, Target_angle,3,6);
 
 }
 
@@ -375,7 +375,7 @@ void INS_data_get(void)
     // float d = Cal_Distance(g_encoder_raw);              // 编码器测距（旧）
     float d = CYT2_get_distance_mag(motor_value.receive_left_speed_data); // 磁编测距（新）
 
-    guandao_lucheng += d;                               //积分距离
+    trajectory_distance += d;                               //积分距离
 
     theta0 = roll_balance_cascade.posture_value.yaw;    //获取偏航角
     data_x.f += d * cosf(theta0 * 3.1415926f / 180.0f); //单位距离的X轴分位移

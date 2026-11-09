@@ -14,11 +14,11 @@
 #define SPEED_MAX   798
 #define SPEED_MIN   439
 
-uint32 Mode_chage=0;
+uint32 Mode_change=0;
 
 uint32 sys_times=0;
 float  End_error=0;
-float  Taget_angle=0;
+float  Target_angle=0;
 
 
 
@@ -31,7 +31,7 @@ void Body_ctrl_1(void)
     static bool once = false;     //保证只赋值一次
     if (!once)
     {
-      Taget_angle=0;              //起始角度为0
+      Target_angle=0;              //起始角度为0
       balance_mode_parameter(1);   //分配科目一参数
       once = true;
     }
@@ -42,7 +42,7 @@ void Body_ctrl_1(void)
 
     /* ===== 弯道自动减速 ===== */
 
-    float turn_err = fabsf(AngleErrorNormalize(Taget_angle - roll_balance_cascade.posture_value.yaw));
+    float turn_err = fabsf(AngleErrorNormalize(Target_angle - roll_balance_cascade.posture_value.yaw));
     float speed_target = SPEED_MAX;
     if(turn_err > 20.0f)
     {
@@ -58,7 +58,7 @@ void Body_ctrl_1(void)
 
     if(I>=2000)                 //改变I的数值即可改变课目一回头时间
     {
-        Taget_angle=180;
+        Target_angle=180;
 //        gpio_set_level(Buzzer_pin,1);
     }
 
@@ -89,15 +89,15 @@ void Body_ctrl_1(void)
 
     if(sys_times%20==0)//转向环
     {
-//        pid_control(&roll_balance_cascade.turn_cycle, StepApproach(Taget_angle,2), roll_balance_cascade.posture_value.yaw);
+//        pid_control(&roll_balance_cascade.turn_cycle, StepApproach(Target_angle,2), roll_balance_cascade.posture_value.yaw);
 
 //            if(sys_times>150)
 //            {
-//                pid_control(&roll_balance_cascade.turn_cycle, AngleErrorNormalize(StepApproach(Taget_angle,4)-roll_balance_cascade.posture_value.yaw),0);
+//                pid_control(&roll_balance_cascade.turn_cycle, AngleErrorNormalize(StepApproach(Target_angle,4)-roll_balance_cascade.posture_value.yaw),0);
 //            }
 //            else
             {
-                pid_control(&roll_balance_cascade.turn_cycle, AngleErrorNormalize(StepApproach(Taget_angle,2)-roll_balance_cascade.posture_value.yaw),0);
+                pid_control(&roll_balance_cascade.turn_cycle, AngleErrorNormalize(StepApproach(Target_angle,2)-roll_balance_cascade.posture_value.yaw),0);
             }
 
 
@@ -168,8 +168,8 @@ void Balance_1_text(void)
     ips_show_string(8*0, 16*13, "Roll:");     ips_show_float(8*10,16*13, roll_balance_cascade.posture_value.rol,3,6);
 //    ips_show_string(8*0, 16*14, "A_OUT:");    ips_show_float(8*10,16*14, roll_balance_cascade.angle_cycle.out,3,6);
 //    ips_show_string(8*0, 16*15, "G_out");     ips_show_float(8*10,16*15, roll_balance_cascade.angular_speed_cycle.out,3,6);
-//    ips_show_string(8*0, 16*16, "Taget_A");   ips_show_float(8*10,16*16, Taget_angle,3,6);
-    ips_show_string(8*0, 16*17, "Distance");       ips_show_float(8*10,16*17, guandao_lucheng,3,6);
+//    ips_show_string(8*0, 16*16, "Taget_A");   ips_show_float(8*10,16*16, Target_angle,3,6);
+    ips_show_string(8*0, 16*17, "Distance");       ips_show_float(8*10,16*17, trajectory_distance,3,6);
 
 //    ips200_draw_line(0, 16*18, 239, 16*18, RGB565_RED);
 

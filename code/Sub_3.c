@@ -6,7 +6,7 @@
  *
  *  科目3：科目1的3环串级控制 + 惯导角度 + 弯道自动减速
  *    控制：balance_mode_parameter(3) — 有角速度环
- *    角度：来自 INS（guandao_load 更新 Taget_angle）
+ *    角度：来自 INS（trajectory_replay 更新 Target_angle）
  *    速度：直道 SPEED_MAX，弯道自动降到 SPEED_MIN
  */
 
@@ -36,7 +36,7 @@ void Body_ctrl_3(void)
         balance_mode_parameter(3);            // 科目3参数（有角速度环）
 
         // 强制对齐起步姿态，消除初始手放偏差引起的猛烈打舵
-        Taget_angle = roll_balance_cascade.posture_value.yaw;
+        Target_angle = roll_balance_cascade.posture_value.yaw;
 
         s_current_pwm = 0.0f;
         s_is_init = true;
@@ -52,15 +52,15 @@ void Body_ctrl_3(void)
 
     // 计算当前的赛道进度比例 (范围 0.0 ~ 1.0)
     // 增加分母为0的保护机制
-    if (guandao_index > 0)
+    if (trajectory_index > 0)
     {
-        progress_ratio = (float)guandao_new_cnt / (float)guandao_index;
+        progress_ratio = (float)trajectory_new_cnt / (float)trajectory_index;
     }
 
     // 【路段 A：掉头区】：只有跑过了赛道全程的 40%，才允许启用弯道减速！
     if (progress_ratio > 0.42f)
     {
-        float turn_err = fabsf(AngleErrorNormalize(Taget_angle - roll_balance_cascade.posture_value.yaw));
+        float turn_err = fabsf(AngleErrorNormalize(Target_angle - roll_balance_cascade.posture_value.yaw));
 
         // --- 1. 速度干预 ---
         if(turn_err > 20.0f)
@@ -118,9 +118,9 @@ void Body_ctrl_3(void)
         pid_control(&roll_balance_cascade.angle_cycle, roll_balance_cascade.turn_cycle.out - roll_balance_cascade.posture_value.mechanical_zero, -roll_balance_cascade.posture_value.rol);
     }
 
-    if(sys_times % 20 == 0) // 转向环 (依靠惯导Taget_angle寻迹)
+    if(sys_times % 20 == 0) // 转向环 (依靠惯导Target_angle寻迹)
     {
-        pid_control(&roll_balance_cascade.turn_cycle, AngleErrorNormalize(Taget_angle - roll_balance_cascade.posture_value.yaw), 0);
+        pid_control(&roll_balance_cascade.turn_cycle, AngleErrorNormalize(Target_angle - roll_balance_cascade.posture_value.yaw), 0);
     }
 
     Steer_set(SERVO_MOTOR_MID + roll_balance_cascade.angular_speed_cycle.out);
@@ -128,7 +128,7 @@ void Body_ctrl_3(void)
     /* ==================================================================
      * 4. 绝对开环动力输出 (带 PWM 斜坡缓冲防摔)
      * ================================================================== */
-    if(guandao_new_cnt >= guandao_index) // 终点停车
+    if(trajectory_new_cnt >= trajectory_index) // 终点停车
     {
         CYT2_S_motor_ctrl(0);            // 停车，PWM归0
         s_is_init = false;               // 复位状态机，为下次发车做准备

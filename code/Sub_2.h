@@ -2,7 +2,7 @@
  * Subject_2.h
  *
  *  Created on: 2026Äê4ÔÂ7ÈÕ
- *      Author: SHelton Liu
+ *      Author: Shelton Liu
  */
 
 #ifndef CODE_SUB_2_H_

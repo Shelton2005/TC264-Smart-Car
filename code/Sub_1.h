@@ -9,8 +9,8 @@
 #define CODE_SUB_1_H_
 
 extern uint32 sys_times;
-extern float  Taget_angle;
-extern uint32 Mode_chage;
+extern float  Target_angle;
+extern uint32 Mode_change;
 
 
 void Body_ctrl_1(void);
