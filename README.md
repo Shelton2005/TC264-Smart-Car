@@ -3,7 +3,7 @@
 基于 Infineon AURIX TC264 的嵌入式智能车项目，包含姿态解算、串级 PID 控制、轨迹记录与回放，以及 Stanley 路径跟踪。
 
 - **比赛成绩：华北赛区第十四名。**
-- **本人角色：核心软件成员。** 下文介绍工程整体实现；具体模块的个人贡献范围仍待补充。
+- **本人角色：核心软件成员。** 
 - **开发语言：C；平台：TC264；工程环境：AURIX Development Studio / TASKING 工具链。**
 
 > An embedded smart car project on Infineon AURIX TC264, featuring IMU attitude estimation, cascaded PID control, trajectory recording and replay, and Stanley path tracking. Regional result: 14th in North China. My role: core software team member.
